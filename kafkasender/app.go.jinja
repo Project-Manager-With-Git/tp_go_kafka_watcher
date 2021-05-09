@@ -1,4 +1,4 @@
-package sender
+package kafkasender
 
 import (
 	"fmt"
@@ -37,7 +37,8 @@ func (app *Application) Main() {
 		os.Exit(1)
 	}
 	defer Sender.Close()
-	for i := 0; i < 10; i++ {
+	log.Info("sender start")
+	for i := 0; i < 20; i++ {
 		topic := "topic1-1-1"
 		value := fmt.Sprintf("msg%d", i)
 		err := Sender.SendAndWait(&kafka.Message{
@@ -55,13 +56,14 @@ func (app *Application) Main() {
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
+	Sender.Flush(10 * 1000)
 }
 
-// root, _ := s.New(&s.EntryPointMeta{Name: "tp_go_kafka_watcher", Usage: "tp_go_kafka_watcher"})
-// nodeb, _ := s.New(&s.EntryPointMeta{Name: "sender", Usage: "tp_go_kafka_watcher sender"})
-var NodeSender, _ = s.New(&s.EntryPointMeta{Name: "sender", Usage: "tp_go_kafka_watcher sender"}, &Application{
+// root, _ := s.New(&s.EntryPointMeta{Name: "{{ app_name }}", Usage: "{{ app_name }}"})
+// nodeb, _ := s.New(&s.EntryPointMeta{Name: "sender", Usage: "{{ app_name }} sender"})
+var App, _ = s.New(&s.EntryPointMeta{Name: "sender", Usage: "{{ app_name }} sender"}, &Application{
 	App_Version:                       "0.0.0",
-	App_Name:                          "tp_go_kafka_watcher_watcher",
+	App_Name:                          "{{ app_name }}_watcher",
 	Log_Level:                         "DEBUG",
 	Send_Kafka_Go_Delivery_Reports:    false,
 	Send_Kafka_Go_Batch_Producer:      true,

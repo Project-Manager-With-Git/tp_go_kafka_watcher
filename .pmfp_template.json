@@ -1,0 +1,45 @@
+{
+    "language": "go",
+    "env": "gomod",
+    "description": "go语言监听kafka的项目模板,同时代发送端",
+    "author": "hsz",
+    "template_type": "watcher",
+    "requires": [
+        "github.com/Golang-Tools/loggerhelper@v0.0.3",
+        "github.com/Golang-Tools/schema-entry-go@v0.0.4",
+        "github.com/confluentinc/confluent-kafka-go@v1.6.1"
+    ],
+    "template_keys": {
+        "app_name": {
+            "description": "项目名",
+            "default": "{{ project_name }}"
+        }
+    },
+    "components": {
+        "kafkasender": {
+            "source": "kafkasender",
+            "description": "kafka的发送端模板",
+            "default_path": "kafkasender"
+        },
+        "kafkawatcher": {
+            "source": "kafkawatcher",
+            "description": "kafka的监听端模板",
+            "default_path": "kafkawatcher"
+        },
+        "main": {
+            "source": "main.go.jinja",
+            "description": "kafka监听项目的入口函数",
+            "default_path": "{{ project_name }}.go"
+        },
+        "dockerfile": {
+            "source": "dockerfile.jinja",
+            "description": "用于打包镜像的dockerfile文件",
+            "default_path": "dockerfile"
+        },
+        "dockercompose": {
+            "source": "docker-compose.yml.jinja",
+            "description": "用于测试程序的docker-compose文件",
+            "default_path": "docker-compose.yml"
+        }
+    }
+}

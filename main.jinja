@@ -1,0 +1,21 @@
+package main
+
+import (
+	"os"
+	"{{ app_name }}/kafkasender"
+	"{{ app_name }}/kafkawatcher"
+
+	log "github.com/Golang-Tools/loggerhelper"
+	s "github.com/Golang-Tools/schema-entry-go"
+)
+
+func main() {
+	root, err := s.New(&s.EntryPointMeta{Name: "{{ app_name }}", Usage: "{{ app_name }}"})
+	if err != nil {
+		log.Error("create root node error", log.Dict{"err": err})
+		os.Exit(1)
+	}
+	s.RegistSubNode(root, kafkasender.App)
+	s.RegistSubNode(root, kafkawatcher.App)
+	root.Parse(os.Args)
+}

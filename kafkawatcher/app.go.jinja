@@ -1,4 +1,4 @@
-package watcher
+package kafkawatcher
 
 import (
 	"os"
@@ -47,11 +47,11 @@ func (app *Application) Main() {
 	}
 }
 
-// root, _ := s.New(&s.EntryPointMeta{Name: "tp_go_kafka_watcher", Usage: "tp_go_kafka_watcher"})
-// nodeb, _ := s.New(&s.EntryPointMeta{Name: "sender", Usage: "tp_go_kafka_watcher sender"})
-var NodeWatcher, _ = s.New(&s.EntryPointMeta{Name: "watcher", Usage: "tp_go_kafka_watcher watcher"}, &Application{
+// root, _ := s.New(&s.EntryPointMeta{Name: "{{ app_name }}", Usage: "{{ app_name }}"})
+// nodeb, _ := s.New(&s.EntryPointMeta{Name: "sender", Usage: "{{ app_name }} sender"})
+var App, _ = s.New(&s.EntryPointMeta{Name: "watcher", Usage: "{{ app_name }} watcher"}, &Application{
 	App_Version:                   "0.0.0",
-	App_Name:                      "tp_go_kafka_watcher_watcher",
+	App_Name:                      "{{ app_name }}_watcher",
 	Log_Level:                     "DEBUG",
 	Watch_Kafka_Auto_Offset_Reset: "latest",
 	Watch_Kafka_Isolation_Level:   "read_committed",
