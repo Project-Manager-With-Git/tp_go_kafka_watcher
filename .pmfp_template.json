@@ -16,15 +16,30 @@
         }
     },
     "components": {
-        "kafkasender": {
-            "source": "kafkasender",
-            "description": "kafka的发送端模板",
-            "default_path": "kafkasender"
+        "kafkasender_proxy": {
+            "source": "kafkasender/sender.go.jinja",
+            "description": "kafka的生产者代理模板",
+            "default_path": "kafkasender/sender.go"
         },
-        "kafkawatcher": {
-            "source": "kafkawatcher",
-            "description": "kafka的监听端模板",
-            "default_path": "kafkawatcher"
+        "kafkasender_app": {
+            "source": "kafkasender/app.go.jinja",
+            "description": "kafka的发送端应用模板",
+            "default_path": "kafkasender/app.go"
+        },
+        "kafkawatcher_proxy": {
+            "source": "kafkawatcher/watcher.go.jinja",
+            "description": "kafka的消费者代理模板",
+            "default_path": "kafkawatcher/watcher.go"
+        },
+        "kafkawatcher_handdler": {
+            "source": "kafkawatcher/handdler.go.jinja",
+            "description": "kafka的监听端处理程序模板",
+            "default_path": "kafkawatcher/handdler.go"
+        },
+        "kafkawatcher_app": {
+            "source": "kafkawatcher/app.go.jinja",
+            "description": "kafka的监听端应用程序模板",
+            "default_path": "kafkawatcher/app.go"
         },
         "main": {
             "source": "main.go.jinja",
