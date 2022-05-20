@@ -4,23 +4,22 @@ import (
 	"os"
 	"strings"
 
-	log "github.com/Golang-Tools/loggerhelper"
-	s "github.com/Golang-Tools/schema-entry-go"
+	log "github.com/Golang-Tools/loggerhelper/v2"
 
-	// "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 type Application struct {
-	App_Version                   string   `json:"app_version" jsonschema:"required,title=v,description=应用版本"`
-	App_Name                      string   `json:"app_name" jsonschema:"required,title=n,description=应用名"`
-	Log_Level                     string   `json:"log_level" jsonschema:"required,title=l,description=log等级,enum=TRACE,enum=DEBUG,enum=INFO,enum=WARN,enum=ERROR"`
+	App_Version                   string   `json:"app_version" jsonschema:"required,title=v,description=应用版本,default=0.0.1"`
+	App_Name                      string   `json:"app_name" jsonschema:"required,title=n,description=应用名,default={{ app_name }}"`
+	Log_Level                     string   `json:"log_level" jsonschema:"required,title=l,description=log等级,enum=TRACE,enum=DEBUG,enum=INFO,enum=WARN,enum=ERROR,default=DEBUG"`
 	Watch_Kafka_Topics            []string `json:"watch_kafka_topics" jsonschema:"required,title=t,description=监听的topic列表"`
 	Watch_Kafka_URLS              []string `json:"watch_kafka_urls" jsonschema:"required,title=u,description=监听的kafka集群地址"`
 	Watch_Kafka_Group_ID          string   `json:"watch_kafka_group_id" jsonschema:"required,title=g,description=监听的kafka集群的消费者群组id"`
-	Watch_Kafka_Auto_Offset_Reset string   `json:"watch_kafka_auto_offset_reset" jsonschema:"required,title=a,description=测试列表,enum=earliest,enum=latest"`
-	Watch_Kafka_Isolation_Level   string   `json:"watch_kafka_isolation_level" jsonschema:"required,title=i,description=kafka的隔离级别,enum=read_uncommitted,enum=read_committed"`
+	Watch_Kafka_Auto_Offset_Reset string   `json:"watch_kafka_auto_offset_reset" jsonschema:"required,title=a,description=测试列表,enum=earliest,enum=latest,default=latest"`
+	Watch_Kafka_Isolation_Level   string   `json:"watch_kafka_isolation_level" jsonschema:"required,title=i,description=kafka的隔离级别,enum=read_uncommitted,enum=read_committed,default=read_committed"`
 }
+
 
 func (app *Application) Main() {
 	log.Init(app.Log_Level, map[string]interface{}{"app_name": app.App_Name})
@@ -46,18 +45,3 @@ func (app *Application) Main() {
 		log.Error("handdler get error", log.Dict{"error": err})
 	}
 }
-
-// root, _ := s.New(&s.EntryPointMeta{Name: "{{ app_name }}", Usage: "{{ app_name }}"})
-// nodeb, _ := s.New(&s.EntryPointMeta{Name: "sender", Usage: "{{ app_name }} sender"})
-var App, _ = s.New(&s.EntryPointMeta{Name: "watcher", Usage: "{{ app_name }} watcher"}, &Application{
-	App_Version:                   "0.0.0",
-	App_Name:                      "{{ app_name }}_watcher",
-	Log_Level:                     "DEBUG",
-	Watch_Kafka_Auto_Offset_Reset: "latest",
-	Watch_Kafka_Isolation_Level:   "read_committed",
-})
-
-// s.RegistSubNode(root, nodeb)
-// nodeb.RegistSubNode(nodec)
-// os.Setenv("FOO_BAR_PAR_A", "123")
-// root.Parse([]string{"foo", "bar", "par", "--Field=4", "--Field=5", "--Field=6"})

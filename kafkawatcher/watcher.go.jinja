@@ -3,8 +3,7 @@ package kafkawatcher
 import (
 	"errors"
 
-	log "github.com/Golang-Tools/loggerhelper"
-	// "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	log "github.com/Golang-Tools/loggerhelper/v2"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
@@ -29,10 +28,7 @@ func New() *ConsumerProxy {
 
 // IsOk 检查代理是否已经可用
 func (proxy *ConsumerProxy) IsOk() bool {
-	if proxy.Consumer == nil {
-		return false
-	}
-	return true
+	return proxy.Consumer != nil
 }
 
 //SetConnect 设置连接的客户端
@@ -96,5 +92,5 @@ func (proxy *ConsumerProxy) Regist(cb Callback) error {
 	return nil
 }
 
-//Proxy 默认的redis代理对象
+//Proxy 默认的kafka Consumer代理对象
 var Watcher = New()

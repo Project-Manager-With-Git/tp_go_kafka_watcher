@@ -1,3 +1,8 @@
+# v2.0.0
+
++ 更新支持版本,v2版本开始只支持go 1.18+
++ 更新依赖`github.com/confluentinc/confluent-kafka-go`至v1.8.2
+
 # v0.0.1
 
 项目创建

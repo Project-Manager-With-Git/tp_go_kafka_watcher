@@ -5,17 +5,27 @@ import (
 	"{{ app_name }}/kafkasender"
 	"{{ app_name }}/kafkawatcher"
 
-	log "github.com/Golang-Tools/loggerhelper"
-	s "github.com/Golang-Tools/schema-entry-go"
+	log "github.com/Golang-Tools/loggerhelper/v2"
+	s "github.com/Golang-Tools/schema-entry-go/v2"
 )
 
 func main() {
-	root, err := s.New(&s.EntryPointMeta{Name: "{{ app_name }}", Usage: "{{ app_name }}"})
+	root, err := s.NewEntryPoint(s.WithName("{{ app_name }}"), s.WithUsage("{{ app_name }}"))
 	if err != nil {
 		log.Error("create root node error", log.Dict{"err": err})
 		os.Exit(1)
 	}
-	s.RegistSubNode(root, kafkasender.App)
-	s.RegistSubNode(root, kafkawatcher.App)
+	sender, err := s.NewEndPoint(new(kafkasender.Application), s.WithName("sender"), s.WithUsage("{{ app_name }} sender"))
+	if err != nil {
+		log.Error("create sender node error", log.Dict{"err": err})
+		os.Exit(1)
+	}
+	watcher, err := s.NewEndPoint(new(kafkawatcher.Application), s.WithName("watcher"), s.WithUsage("{{ app_name }} watcher"))
+	if err != nil {
+		log.Error("create watcher node error", log.Dict{"err": err})
+		os.Exit(1)
+	}
+	sender.SetParent(root)
+	watcher.SetParent(root)
 	root.Parse(os.Args)
 }
