@@ -22,7 +22,7 @@ type Application struct {
 
 
 func (app *Application) Main() {
-	log.Init(app.Log_Level, map[string]interface{}{"app_name": app.App_Name})
+	log.Set(log.WithLevel(app.Log_Level), log.AddExtField("app_name", app.App_Name))
 	err := Watcher.InitFromOptions(&kafka.ConfigMap{
 		"bootstrap.servers": strings.Join(app.Watch_Kafka_URLS, ","),
 		"group.id":          app.Watch_Kafka_Group_ID,
