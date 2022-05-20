@@ -11,8 +11,8 @@ COPY go.sum /code/go.sum
 RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 RUN apt update -y && apt install -y --no-install-recommends librdkafka1 && rm -rf /var/lib/apt/lists/*
 # 复制源码
-COPY sender /code/sender
-COPY watcher /code/watcher
+COPY kafkasender /code/kafkasender 
+COPY kafkawatcher /code/kafkawatcher
 COPY {{ app_name }}.go /code/{{ app_name }}.go
 # 编译可执行文件
 RUN go build -ldflags "-s -w" -o {{ app_name }}-go {{ app_name }}.go
