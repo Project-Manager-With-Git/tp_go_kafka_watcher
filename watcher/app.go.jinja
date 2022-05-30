@@ -1,12 +1,14 @@
-package kafkawatcher
+package watcher
 
 import (
 	"os"
-	"strings"
+	"os/signal"
+	"time"
 
 	log "github.com/Golang-Tools/loggerhelper/v2"
+	"github.com/Golang-Tools/optparams"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/Golang-Tools/kafkahelper/consumerproxy"
 )
 
 type Application struct {
@@ -14,34 +16,40 @@ type Application struct {
 	App_Name                      string   `json:"app_name" jsonschema:"required,title=n,description=应用名,default={{ app_name }}"`
 	Log_Level                     string   `json:"log_level" jsonschema:"required,title=l,description=log等级,enum=TRACE,enum=DEBUG,enum=INFO,enum=WARN,enum=ERROR,default=DEBUG"`
 	Watch_Kafka_Topics            []string `json:"watch_kafka_topics" jsonschema:"required,title=t,description=监听的topic列表"`
-	Watch_Kafka_URLS              []string `json:"watch_kafka_urls" jsonschema:"required,title=u,description=监听的kafka集群地址"`
+	Watch_Kafka_URLS              string   `json:"watch_kafka_urls" jsonschema:"required,title=u,description=监听的kafka集群地址"`
 	Watch_Kafka_Group_ID          string   `json:"watch_kafka_group_id" jsonschema:"required,title=g,description=监听的kafka集群的消费者群组id"`
 	Watch_Kafka_Auto_Offset_Reset string   `json:"watch_kafka_auto_offset_reset" jsonschema:"required,title=a,description=测试列表,enum=earliest,enum=latest,default=latest"`
 	Watch_Kafka_Isolation_Level   string   `json:"watch_kafka_isolation_level" jsonschema:"required,title=i,description=kafka的隔离级别,enum=read_uncommitted,enum=read_committed,default=read_committed"`
 }
 
-
 func (app *Application) Main() {
 	log.Set(log.WithLevel(app.Log_Level), log.AddExtField("app_name", app.App_Name))
-	err := Watcher.InitFromOptions(&kafka.ConfigMap{
-		"bootstrap.servers": strings.Join(app.Watch_Kafka_URLS, ","),
-		"group.id":          app.Watch_Kafka_Group_ID,
-		"auto.offset.reset": app.Watch_Kafka_Auto_Offset_Reset,
-		"isolation.level":   app.Watch_Kafka_Isolation_Level,
-	})
+
+	opts := []optparams.Option[consumerproxy.Options]{
+		consumerproxy.WithAutoOffsetReset(app.Watch_Kafka_Auto_Offset_Reset),
+		consumerproxy.WithIsolationLevel(app.Watch_Kafka_Isolation_Level),
+		consumerproxy.WithGroupID(app.Watch_Kafka_Group_ID),
+	}
+	err := consumerproxy.Default.Init(app.Watch_Kafka_URLS, opts...)
+
 	if err != nil {
 		log.Error("Failed to init watcher", log.Dict{"error": err})
 		os.Exit(1)
 	}
-	defer Watcher.Close()
-	err = Watcher.SubscribeTopics(app.Watch_Kafka_Topics, nil)
+	defer consumerproxy.Default.Close()
+	err = consumerproxy.Default.SubscribeTopics(app.Watch_Kafka_Topics, nil)
 	if err != nil {
 		log.Error("Failed to Subscribe Topics", log.Dict{"error": err})
 		return
 	}
-	defer Watcher.Unsubscribe()
-	err = Watcher.handdler()
-	if err != nil {
-		log.Error("handdler get error", log.Dict{"error": err})
-	}
+	defer consumerproxy.Default.Unsubscribe()
+	consumerproxy.Default.OnMessage(handdler)
+	stop := consumerproxy.Default.Watch()
+	quit := make(chan os.Signal, 5)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Info("Shuting Down ...")
+	stop()
+	time.Sleep(3 * time.Second)
+	log.Info("Shutdown")
 }

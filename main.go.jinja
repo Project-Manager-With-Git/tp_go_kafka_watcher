@@ -2,8 +2,8 @@ package main
 
 import (
 	"os"
-	"{{ app_name }}/kafkasender"
-	"{{ app_name }}/kafkawatcher"
+	"{{ app_name }}/sender"
+	"{{ app_name }}/watcher"
 
 	log "github.com/Golang-Tools/loggerhelper/v2"
 	s "github.com/Golang-Tools/schema-entry-go/v2"
@@ -15,12 +15,12 @@ func main() {
 		log.Error("create root node error", log.Dict{"err": err})
 		os.Exit(1)
 	}
-	sender, err := s.NewEndPoint(new(kafkasender.Application), s.WithName("sender"), s.WithUsage("{{ app_name }} sender"))
+	sender, err := s.NewEndPoint(new(sender.Application), s.WithName("sender"), s.WithUsage("{{ app_name }} sender"))
 	if err != nil {
 		log.Error("create sender node error", log.Dict{"err": err})
 		os.Exit(1)
 	}
-	watcher, err := s.NewEndPoint(new(kafkawatcher.Application), s.WithName("watcher"), s.WithUsage("{{ app_name }} watcher"))
+	watcher, err := s.NewEndPoint(new(watcher.Application), s.WithName("watcher"), s.WithUsage("{{ app_name }} watcher"))
 	if err != nil {
 		log.Error("create watcher node error", log.Dict{"err": err})
 		os.Exit(1)

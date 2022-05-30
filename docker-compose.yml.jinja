@@ -1,4 +1,4 @@
-version: '2.4'
+version: "2.4"
 services:
     zookeeper:
         image: wurstmeister/zookeeper
@@ -7,8 +7,8 @@ services:
         networks:
             local:
                 aliases:
-                - "zookeeper.local"
-          
+                    - "zookeeper.local"
+
     kafka:
         image: wurstmeister/kafka
         depends_on:
@@ -18,11 +18,11 @@ services:
         environment:
             KAFKA_ADVERTISED_HOST_NAME: kafka.local
             KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-            KAFKA_CREATE_TOPICS: "topic1-1-1"
+            KAFKA_CREATE_TOPICS: "topic1-1-1:1:1:compact"
         networks:
             local:
                 aliases:
-                - "kafka.local"
+                    - "kafka.local"
     watcher:
         build: ./
         depends_on:
@@ -30,12 +30,12 @@ services:
         networks:
             local:
                 aliases:
-                - "kafka.local"
+                    - "kafka.local"
         environment:
-            {{ app_name | upper }}_WATCH_KAFKA_TOPICS: "topic1-1-1"
-            {{ app_name | upper }}_WATCHER_WATCH_KAFKA_URLS: "kafka:9092"
-            {{ app_name | upper }}_WATCHER_WATCH_KAFKA_GROUP_ID: "test"
-            {{ app_name | upper }}_WATCHER_LOG_LEVEL: "INFO"
+            {{ app_name|upper }}_WATCHER_WATCH_KAFKA_TOPICS: "topic1-1-1"
+            {{ app_name|upper }}_WATCHER_WATCH_KAFKA_URLS: "kafka:9092"
+            {{ app_name|upper }}_WATCHER_WATCH_KAFKA_GROUP_ID: "test"
+            {{ app_name|upper }}_WATCHER_WATCH_LOG_LEVEL: "INFO"
         command: ["watcher"]
 
     sender:
@@ -45,10 +45,10 @@ services:
         networks:
             local:
                 aliases:
-                - "kafka.local"
+                    - "kafka.local"
         environment:
-            {{ app_name | upper }}_SENDER_SEND_KAFKA_URLS: "kafka:9092"
-            {{ app_name | upper }}_SENDER_LOG_LEVEL: "INFO"
+            {{ app_name|upper }}_SENDER_SEND_KAFKA_URLS: "kafka:9092"
+            {{ app_name|upper }}_SENDER_LOG_LEVEL: "INFO"
         command: ["sender"]
 
 networks:

@@ -1,0 +1,10 @@
+package watcher
+
+import (
+	log "github.com/Golang-Tools/loggerhelper/v2"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+)
+
+func handdler(msg *kafka.Message) {
+	log.Info("get msg on handdler", log.Dict{"msg": msg})
+}

@@ -2,10 +2,13 @@
     "language": "go",
     "env": "gomod",
     "description": "go语言监听kafka的项目模板,同时代发送端",
+    "mini_language_version": "1.18",
     "author": "hsz",
     "template_type": "watcher",
     "requires": [
+        "github.com/Golang-Tools/kafkahelper@v0.0.1",
         "github.com/Golang-Tools/loggerhelper/v2@v2.0.1",
+        "github.com/Golang-Tools/optparams@v0.0.1",
         "github.com/Golang-Tools/schema-entry-go/v2@v2.1.0",
         "github.com/confluentinc/confluent-kafka-go@v1.8.2"
     ],
@@ -16,35 +19,21 @@
         }
     },
     "components": {
-        "kafkasender_proxy": {
-            "source": "kafkasender/sender.go.jinja",
-            "description": "kafka的生产者代理模板",
-            "default_path": "kafkasender/sender.go"
-        },
-        "kafkasender_app": {
-            "source": "kafkasender/app.go.jinja",
+     
+        "sender": {
+            "source": "sender",
             "description": "kafka的发送端应用模板",
-            "default_path": "kafkasender/app.go"
+            "default_path": "sender"
         },
-        "kafkawatcher_proxy": {
-            "source": "kafkawatcher/watcher.go.jinja",
-            "description": "kafka的消费者代理模板",
-            "default_path": "kafkawatcher/watcher.go"
-        },
-        "kafkawatcher_handdler": {
-            "source": "kafkawatcher/handdler.go.jinja",
+        "watcher": {
+            "source": "watcher",
             "description": "kafka的监听端处理程序模板",
-            "default_path": "kafkawatcher/handdler.go"
-        },
-        "kafkawatcher_app": {
-            "source": "kafkawatcher/app.go.jinja",
-            "description": "kafka的监听端应用程序模板",
-            "default_path": "kafkawatcher/app.go"
+            "default_path": "watcher"
         },
         "main": {
             "source": "main.go.jinja",
             "description": "kafka监听项目的入口函数",
-            "default_path": "{{ project_name }}.go"
+            "default_path": "main.go"
         },
         "dockerfile": {
             "source": "dockerfile.jinja",

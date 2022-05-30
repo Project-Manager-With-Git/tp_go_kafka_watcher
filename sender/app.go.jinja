@@ -1,0 +1,59 @@
+package sender
+
+import (
+	"fmt"
+	"os"
+	"time"
+
+	"github.com/Golang-Tools/kafkahelper/msghelper"
+	"github.com/Golang-Tools/kafkahelper/producerproxy"
+	log "github.com/Golang-Tools/loggerhelper/v2"
+	"github.com/Golang-Tools/optparams"
+)
+
+type Application struct {
+	App_Version                       string `json:"app_version" jsonschema:"required,title=v,description=应用版本,default={{ app_name }}"`
+	App_Name                          string `json:"app_name" jsonschema:"required,title=n,description=应用名,default=0.0.1"`
+	Log_Level                         string `json:"log_level" jsonschema:"required,title=l,description=log等级,enum=TRACE,enum=DEBUG,enum=INFO,enum=WARN,enum=ERROR,default=DEBUG"`
+	Send_Kafka_URLS                   string `json:"send_kafka_urls" jsonschema:"required,title=u,description=监听的kafka集群地址"`
+	Send_Kafka_Go_Delivery_Reports    bool   `json:"send_kafka_go_delivery_reports" jsonschema:"required,title=r,description=是否报告发送情况"`
+	Send_Kafka_Go_Batch_Producer      bool   `json:"send_kafka_go_batch_producer" jsonschema:"required,title=b,description=是否按批发送,default=true"`
+	Send_Kafka_Queue_Buffering_Max_Ms int    `json:"send_kafka_queue_buffering_max_ms" jsonschema:"required,title=m,description=queue最大缓存多少毫秒后发送,default=10"`
+	Send_Kafka_Acks                   int    `json:"send_kafka_acks" jsonschema:"required,title=a,description=校验逻辑,default=0"`
+}
+
+func (app *Application) Main() {
+	log.Set(log.WithLevel(app.Log_Level), log.AddExtField("app_name", app.App_Name))
+	opts := []optparams.Option[producerproxy.Options]{producerproxy.WithAcks(app.Send_Kafka_Acks)}
+	if !app.Send_Kafka_Go_Delivery_Reports {
+		opts = append(opts, producerproxy.WithoutConfirmDelivery())
+	}
+	if app.Send_Kafka_Go_Batch_Producer {
+		opts = append(opts, producerproxy.AsBatchProducer())
+	}
+	if app.Send_Kafka_Queue_Buffering_Max_Ms > 0 {
+		opts = append(opts, producerproxy.WithQueueBufferingMaxDelay(app.Send_Kafka_Queue_Buffering_Max_Ms))
+	}
+	err := producerproxy.Default.Init(app.Send_Kafka_URLS, opts...)
+	if err != nil {
+		log.Error("Failed to init watcher", log.Dict{"error": err})
+		os.Exit(1)
+	}
+	defer producerproxy.Default.Close()
+	log.Info("sender start")
+	for i := 0; i < 20; i++ {
+		topic := "topic1-1-1"
+		value := fmt.Sprintf("msg%d", i)
+		err := producerproxy.Default.SendAndWait(
+			msghelper.NewMsg(topic, []byte(value),
+				msghelper.WithKey([]byte("key1")),
+				msghelper.WithHeaders(map[string][]byte{"h1": []byte("h1"), "h2": []byte("h2")})))
+
+		if err != nil {
+			log.Error("sender get error", log.Dict{"error": err})
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	producerproxy.Default.Flush(10 * 1000)
+}

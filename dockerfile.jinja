@@ -1,21 +1,24 @@
 # 构建可执行文件
-FROM golang:1.18 as build_bin
+FROM golang:1.18-alpine as build_bin
 ENV GO111MODULE=on
-ENV GOPROXY=https://goproxy.io
+ENV GOPROXY=https://goproxy.cn
 # 启用cgo
 ENV CGO_ENABLED=1
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+RUN apk update librdkafka-dev pkgconf && \
+    apk --no-cache add build-base librdkafka-dev pkgconf && \
+    rm -rf /var/cache/apk/*
+
 WORKDIR /code
 # 复制依赖列表
 COPY go.mod /code/go.mod
 COPY go.sum /code/go.sum
-RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
-RUN apt update -y && apt install -y --no-install-recommends librdkafka1 && rm -rf /var/lib/apt/lists/*
 # 复制源码
-COPY kafkasender /code/kafkasender 
-COPY kafkawatcher /code/kafkawatcher
-COPY {{ app_name }}.go /code/{{ app_name }}.go
+COPY sender /code/sender
+COPY watcher /code/watcher
+COPY main.go /code/main.go
 # 编译可执行文件
-RUN go build -ldflags "-s -w" -o {{ app_name }}-go {{ app_name }}.go
+RUN go build -tags musl -ldflags "-s -w" -o {{ app_name }}-go main.go
 
 # 压缩可执行文件
 FROM alpine:3.11 as upx
@@ -27,10 +30,13 @@ COPY --from=build_bin /code/{{ app_name }}-go .
 RUN upx --best --lzma -o {{ app_name }} {{ app_name }}-go
 
 # 构造镜像
-FROM debian:buster-slim as build_upximg
+FROM alpine:3.14.1 as build_upximg
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+RUN apk update && \
+    apk --no-cache add tzdata ca-certificates libc6-compat libgcc libstdc++ librdkafka-dev pkgconf && \
+    rm -rf /var/cache/apk/*
+
 # 部署可执行文件
-RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
-RUN apt update -y && apt install -y --no-install-recommends librdkafka1 && rm -rf /var/lib/apt/lists/*
 COPY --from=upx /code/{{ app_name }} .
 RUN chmod +x /{{ app_name }}
 ENTRYPOINT [ "/{{ app_name }}"]
